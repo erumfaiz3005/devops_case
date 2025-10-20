@@ -2,6 +2,7 @@ pipeline {
   agent any
   environment {
     DIST_DIR = 'dist'
+    WEB_PORT = '9090'
   }
   stages {
     stage('Checkout') {
@@ -39,15 +40,15 @@ pipeline {
 
     stage('Deploy (Local Web Server)') {
       steps {
-        echo "Starting simple local web server..."
+        echo "Starting local web server on port ${WEB_PORT}..."
         script {
           if (isUnix()) {
-            sh 'nohup python3 -m http.server 8088 --directory dist &'
+            sh "nohup python3 -m http.server ${WEB_PORT} --directory dist &"
           } else {
-            bat 'start /B python -m http.server 8088 --directory dist'
+            bat "start /B python -m http.server ${WEB_PORT} --directory dist"
           }
         }
-        echo "Site hosted at http://localhost:8088/index.html"
+        echo "✅ Site hosted at http://localhost:${WEB_PORT}/index.html"
       }
     }
   }
