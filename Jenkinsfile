@@ -42,12 +42,12 @@ pipeline {
         echo "Starting simple local web server..."
         script {
           if (isUnix()) {
-            sh 'nohup python3 -m http.server 8080 --directory dist &'
+            sh 'nohup python3 -m http.server 8088 --directory dist &'
           } else {
-            bat 'start /B python -m http.server 8080 --directory dist'
+            bat 'start /B python -m http.server 8088 --directory dist'
           }
         }
-        echo "Site hosted at http://localhost:8080/index.html"
+        echo "Site hosted at http://localhost:8088/index.html"
       }
     }
   }
