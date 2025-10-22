@@ -2,7 +2,6 @@ pipeline {
   agent any
   environment {
     DIST_DIR = 'dist'
-    WEB_PORT = '9090'
   }
   stages {
     stage('Checkout') {
@@ -38,17 +37,26 @@ pipeline {
       }
     }
 
-    stage('Deploy (Local Web Server)') {
+    stage('Deploy (Auto Web Port)') {
       steps {
-        echo "Starting local web server on port ${WEB_PORT}..."
         script {
+          // Dynamically find a free port using Python
+          def portCmd = isUnix() ?
+            "python3 -c 'import socket; s=socket.socket(); s.bind((\"\",0)); print(s.getsockname()[1]); s.close()'" :
+            "python -c \"import socket; s=socket.socket(); s.bind(('',0)); print(s.getsockname()[1]); s.close()\""
+          def WEB_PORT = sh(script: portCmd, returnStdout: true).trim()
+
+          echo "Found free port: ${WEB_PORT}"
+          echo "Starting local web server on port ${WEB_PORT}..."
+
           if (isUnix()) {
-            sh "nohup python3 -m http.server ${WEB_PORT} --directory dist &"
+            sh "nohup python3 -m http.server ${WEB_PORT} --directory ${DIST_DIR} &"
           } else {
-            bat "start /B python -m http.server ${WEB_PORT} --directory dist"
+            bat "start /B python -m http.server ${WEB_PORT} --directory ${DIST_DIR}"
           }
+
+          echo "✅ Site hosted at http://localhost:${WEB_PORT}/index.html"
         }
-        echo "✅ Site hosted at http://localhost:${WEB_PORT}/index.html"
       }
     }
   }
